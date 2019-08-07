@@ -12,6 +12,8 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -44,11 +46,11 @@ public class Main {
         return content.toString();
     }
 
-    public String sign(String paramsStr) {
+    public String sign(String paramsStr, String secret) {
     	Gson gsonApp = new GsonBuilder().enableComplexMapKeySerialization().create();
 		Type appType = new TypeToken<Map<String, String>>() {}.getType();
 		Map<String, String> paramsMap = gsonApp.fromJson(paramsStr, appType);
-		String secret = "2097b85f76d6a28e9fb2e8674b361466";
+//		String secret = "2097b85f76d6a28e9fb2e8674b361466";
 		String ret = ApiUtils.sign(paramsMap, secret);
 		return ret;
     }
@@ -60,12 +62,14 @@ public class Main {
     }
 
 	public static void main(String[] args) {
+		Logger logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME);
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("h", false, "Lists short help");
 		options.addOption("S", false, "Sign");
 		options.addOption("D", false, "Encryption and Decryption");
 		options.addOption( "f", "file", true, "The file that contains parameters to sign." );
+		options.addOption( "c", "secret", true, "Secret string" );
 		
 		HelpFormatter hf = new HelpFormatter();
         hf.setWidth(110);
@@ -78,11 +82,15 @@ public class Main {
 			}
 			
 			if(line.hasOption("S") && line.hasOption("f")) {
-				String value = line.getOptionValue("file");
+				String file = line.getOptionValue("file");
+				String secret = line.getOptionValue("secret");
 				Main mapp = new Main();
-				String paramsStr = mapp.readFile(value);
-				System.out.println(paramsStr);
-				String ret = mapp.sign(paramsStr);
+				String paramsStr = mapp.readFile(file);
+				logger.info("__________ sign __________");
+				logger.info("secret:" + secret);
+				logger.info("params:" + paramsStr);
+				String ret = mapp.sign(paramsStr, secret);
+				logger.info("sign:" + ret);
 				System.out.println(ret);
 			}
 			else if(line.hasOption("D") && line.hasOption("f")) {
@@ -90,6 +98,8 @@ public class Main {
 				Main mapp = new Main();
 				String encryptedStr = mapp.readFile(value);
 				String ret = mapp.decrypt(encryptedStr);
+				logger.info("__________ decrypt __________");
+				logger.info(ret);
 				System.out.println(ret);
 			}
 			else {
