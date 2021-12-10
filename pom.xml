@@ -6,7 +6,7 @@
   <name>crypto</name>
   
   <properties>
-    <log4j.version>2.11.1</log4j.version>
+    <log4j.version>2.15.0</log4j.version>
   </properties>
   
   <dependencies>
